@@ -1,51 +1,50 @@
 # Multi-Agent Research System
 
-A Python research automation system that uses a LangGraph-based multi-agent workflow to plan a research outline, collect web data, review content, and write a final report.
+A Python research automation system powered by a multi-agent LangGraph workflow that plans a research outline, collects web data, reviews draft content, and generates a final report as a PDF.
 
-## Project Overview
+## Project Layout
 
-This system composes several agents into a directed state graph pipeline:
-- `planner` generates a structured research outline from a topic.
-- `researcher` performs web searches for each outline section.
-- `critic` reviews draft content for hallucinations and missing elements.
-- `reflector` can generate an improved query from critic feedback.
-- `writer` produces a polished final report.
+- `main.py` - CLI entrypoint for running the research workflow and generating `reports/report.pdf`.
+- `config.py` - Environment and LLM client configuration.
+- `api/` - FastAPI application and route definitions.
+  - `api/main.py` - API server startup entrypoint.
+  - `api/api.py` - `/generate-report` endpoint implementation.
+- `agents/` - Agent modules used by the research workflow.
+  - `planner.py`, `researcher.py`, `critic.py`, `reflector.py`, `writer.py`, `section_manager.py`
+- `graph/` - Workflow orchestration and shared state.
+  - `workflow.py` - LangGraph state graph definition.
+  - `state.py` - Typed state model for the workflow.
+- `tools/` - External tooling integrations.
+  - `web_search.py` - Search integration via Tavily.
+- `utils/` - Utility helpers.
+  - `pdf_generator.py` - Creates a PDF from report text.
+- `frontend/` - Placeholder frontend application.
+- `reports/` - Generated report output directory.
 
-The output is rendered as text and saved to a PDF using `utils/pdf_generator.py`.
+## Tech Stack
 
-## Key Components
+- Python 3.x
+- FastAPI
+- Uvicorn
+- LangGraph
+- LangChain
+- Tavily search integration
+- ReportLab
+- Streamlit (optional frontend support)
+- python-dotenv
+- pydantic
 
-- `main.py`
-  - CLI entrypoint.
-  - Prompts for a research topic, runs the graph, prints the report, and saves `reports/report.pdf`.
+## Architecture
 
-- `api/main.py` and `api/api.py`
-  - FastAPI backend for generating reports via POST `/generate-report`.
-  - Accepts a JSON payload with `topic` and returns the report text and PDF path.
+This repository uses a directed multi-agent workflow to assemble a research report:
 
-- `config.py`
-  - Loads environment variables and configures the `ChatGroq` LLM client.
-  - Expects `GROQ_API_KEY` in the environment.
+1. `planner` generates a structured research outline from the input topic.
+2. `researcher` gathers supporting information by searching for each outline section.
+3. `critic` reviews and flags potential issues in the draft report.
+4. `reflector` can improve the query or content based on critic feedback.
+5. `writer` produces the final written report.
 
-- `graph/workflow.py`
-  - Defines the LangGraph `StateGraph` pipeline and the order of agent execution.
-
-- `graph/state.py`
-  - Typed dictionary for the shared research state.
-
-- `agents/`
-  - Contains the agent functions used by the workflow.
-  - `section_manager.py` currently exists as a placeholder for section control logic.
-
-- `tools/web_search.py`
-  - Integrates Tavily search via `TavilyClient`.
-  - Expects `TAVILY_API_KEY` in the environment.
-
-- `utils/pdf_generator.py`
-  - Converts report text into a simple PDF using ReportLab.
-
-- `frontend/app.py`
-  - Flask app placeholder with a root route returning a simple message.
+The final report is rendered as text and then exported to PDF via `utils/pdf_generator.py`.
 
 ## Installation
 
@@ -53,9 +52,9 @@ The output is rendered as text and saved to a PDF using `utils/pdf_generator.py`
 python -m pip install -r requirements.txt
 ```
 
-## Environment Setup
+## Environment Configuration
 
-Create a `.env` file with:
+Create a `.env` file in the repository root with values for the expected keys:
 
 ```text
 GROQ_API_KEY=your_groq_api_key
@@ -64,19 +63,27 @@ TAVILY_API_KEY=your_tavily_api_key
 
 ## Usage
 
-### Run CLI
+### Run the CLI
 
 ```powershell
 python main.py
 ```
 
-### Run API
+This prompts for a research topic, executes the agent workflow, prints the report, and saves the PDF to `reports/report.pdf`.
+
+### Run the API
 
 ```powershell
 python -m api.main
 ```
 
-Then POST to `http://127.0.0.1:8000/generate-report` with JSON:
+Send a POST request to:
+
+```text
+http://127.0.0.1:8000/generate-report
+```
+
+Example request body:
 
 ```json
 {
@@ -84,25 +91,28 @@ Then POST to `http://127.0.0.1:8000/generate-report` with JSON:
 }
 ```
 
+The API returns the generated report text and the path to the saved PDF.
+
+## Frontend
+
+`frontend/app.py` is currently a placeholder application and does not yet provide a complete web UI.
+
 ## Notes
 
-- The `frontend` app is a lightweight Flask placeholder and does not currently implement a full UI.
-- `agents/section_manager.py` is present as a future extension point for section-specific workflow control.
-- The `graph/workflow.py` pipeline currently flows: `planner -> researcher -> critic -> {reflector, writer}` and then ends.
+- Do not commit `.env` or any secret keys to version control.
+- Keep generated files such as `reports/report.pdf` and Python cache artifacts out of source control.
+- The current API route is `/generate-report`, not `/ask`.
 
-## Dependencies
+## Recommended `.gitignore`
 
-Captured from `requirements.txt`:
-- `langgraph`
-- `langchain`
-- `langchain-openai`
-- `langchain-community`
-- `tavily-python`
-- `fastapi`
-- `uvicorn`
-- `streamlit`
-- `python-docx`
-- `reportlab`
-- `pydantic`
-- `python-dotenv`
+```text
+.env
+__pycache__/
+*.pyc
+reports/
+vector_store/
+api/__pycache__/
+frontend/__pycache__/
+src/__pycache__/
+```
 
