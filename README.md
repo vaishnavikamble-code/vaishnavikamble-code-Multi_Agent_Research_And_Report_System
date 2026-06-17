@@ -106,5 +106,3 @@ Captured from `requirements.txt`:
 - `pydantic`
 - `python-dotenv`
 =======
-## Multi -Agent-Research And Report System
->>>>>>> c39595195d91b56f278e050566ae1a2983e178b6
