@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Multi-Agent Research System
 
 A Python research automation system that uses a LangGraph-based multi-agent workflow to plan a research outline, collect web data, review content, and write a final report.
